@@ -1,0 +1,21 @@
+{
+	"routePrefix": "/dink-filter",
+	"bindAddress": "localhost:9405",
+	"globalFilter": {
+		"lootThreshold": 100000,
+		"defaultKillCountInterval": 25,
+		"killCountIntervals": {
+			"TzKal-Zuk": 5
+		}
+	},
+	"destinations": {
+		"https://example.com/webhook": {
+			"enableLoot": true,
+			"enableKillCount": true,
+			"enableKillCountRegular": true,
+			"enableKillCountPBs": true,
+			"lootThreshold": 500000,
+			"defaultKillCountInterval": 100
+		}
+	}
+}
