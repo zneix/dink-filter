@@ -1,0 +1,17 @@
+[Unit]
+Description=Dink filter
+DefaultDependencies=no
+
+[Service]
+WorkingDirectory=/opt/dink-filter
+ExecStart=/opt/dink-filter/dink-filter
+Restart=always
+RestartSec=5s
+
+# My logger stuff
+StandardOutput=append:/var/log/dink-filter.log
+StandardError=append:/var/log/dink-filter.log
+#SyslogIdentifier=dinkfilter
+
+[Install]
+WantedBy=default.target

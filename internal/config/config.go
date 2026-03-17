@@ -50,7 +50,7 @@ func New() *Config {
 }
 
 func (c *Config) GetLootTreshold(url string) int {
-	// 1. If url-specific configuration exists, use that
+	// 1. Check for url-specific loot treshold
 	urlFilter := c.Destinations[url]
 	if urlFilter != nil && urlFilter.LootThreshold != nil {
 		return *urlFilter.LootThreshold
@@ -64,25 +64,25 @@ func (c *Config) GetKillCountInterval(url, bossName string) int {
 	// url-specific configuration
 	urlFilter := c.Destinations[url]
 
-	// 1. Check boss-specific intervals for this url
+	// 1. Check for boss-specific intervals for this url
 	if urlFilter != nil && urlFilter.KillCountIntervals != nil {
 		if bossSpecificInterval, exists := (*urlFilter.KillCountIntervals)[bossName]; exists {
 			return bossSpecificInterval
 		}
 	}
 
-	// 2. Check global boss-specific intervals
+	// 2. Check for global boss-specific intervals
 	if c.GlobalFilter.KillCountIntervals != nil {
 		if globalBossSpecifcInterval, exists := (*c.GlobalFilter.KillCountIntervals)[bossName]; exists {
 			return globalBossSpecifcInterval
 		}
 	}
 
-	// 3. With no boss-specific intervals, check for url-specific default
+	// 3. With no boss-specific intervals, check for url-specific default interval
 	if urlFilter != nil && urlFilter.DefaultKillCountInterval != nil {
 		return *urlFilter.DefaultKillCountInterval
 	}
 
-	// 4. As fallback, use global default value
+	// 4. As fallback, use global default interval
 	return *c.GlobalFilter.DefaultKillCountInterval
 }
