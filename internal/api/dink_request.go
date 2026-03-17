@@ -20,12 +20,12 @@ type dinkRequest struct {
 // dinkRequestPayload represents JSON data about the received request
 // Only some fields that are relevant are included in the object
 type dinkRequestPayload struct {
-	Content     string          `json:"content"`
-	Extra       json.RawMessage `json:"extra"`
-	Type        string          `json:"type"`
-	PlayerName  string          `json:"playerName"`
-	AccountType string          `json:"accountType"`
+	Extra json.RawMessage `json:"extra"`
+	Type  string          `json:"type"`
 
+	//Content           string            `json:"content"`
+	//PlayerName        string            `json:"playerName"`
+	//AccountType       string            `json:"accountType"`
 	//SeasonalWorld     bool              `json:"seasonalWorld"`
 	//DinkAccountHash   string            `json:"dinkAccountHash"`
 	//Embeds            []json.RawMessage `json:"embeds"`
@@ -37,8 +37,8 @@ type dinkRequestPayload struct {
 }
 
 func (p *dinkRequestPayload) String() string {
-	return fmt.Sprintf("&api.dinkRequestPayload{Content:%#v, Extra:%v, Type:%v, PlayerName:%v, AccountType:%v}",
-		p.Content, string(p.Extra), p.Type, p.PlayerName, p.AccountType,
+	return fmt.Sprintf("&api.dinkRequestPayload{Extra:%v, Type:%v}",
+		string(p.Extra), p.Type,
 	)
 }
 
@@ -85,30 +85,33 @@ func parseDinkRequest(r *http.Request) (*dinkRequest, error) {
 // Models for currently handled notification types
 
 type dinkPayloadLoot struct {
-	Items             []lootItem `json:"items"`
-	Source            string     `json:"source"`
-	Party             *[]string  `json:"party"` // nullable
-	Category          string     `json:"category"`
-	KillCount         *int       `json:"killCount"`
-	RarestProbability float64    `json:"rarestProbability"`
-	NpcID             *int       `json:"npcId"` // nullable
+	Items []lootItem `json:"items"`
+
+	//Source            string    `json:"source"`
+	//Party             *[]string `json:"party"` // nullable
+	//Category          string    `json:"category"`
+	//KillCount         *int      `json:"killCount"`
+	//RarestProbability float64   `json:"rarestProbability"`
+	//NpcID             *int      `json:"npcId"` // nullable
 }
 
 type lootItem struct {
-	ID        int      `json:"id"`
-	Quantity  int      `json:"quantity"`
-	PriceEach int      `json:"priceEach"`
-	Name      string   `json:"name"`
-	Criteria  []string `json:"criteria"`
-	Rarity    *float64 `json:"rarity"` // nullable
+	Quantity  int `json:"quantity"`
+	PriceEach int `json:"priceEach"`
+
+	//ID        int      `json:"id"`
+	//Name      string   `json:"name"`
+	//Criteria  []string `json:"criteria"`
+	//Rarity    *float64 `json:"rarity"` // nullable
 }
 
 type dinkPayloadKillCount struct {
-	Boss           string    `json:"boss"`
-	Count          int       `json:"count"`
-	GameMessage    string    `json:"gameMessage"`
-	Time           *string   `json:"time"`           // nullable, is a ISO-8601 duration format: https://en.wikipedia.org/wiki/ISO_8601#Durations
-	IsPersonalBest *bool     `json:"isPersonalBest"` // nullable
-	PersonalBest   *string   `json:"personalBest"`   // nullable, TODO: investigate correct type
-	Party          *[]string `json:"party"`          // nullable
+	Boss           string `json:"boss"`
+	Count          int    `json:"count"`
+	IsPersonalBest *bool  `json:"isPersonalBest"` // nullable
+
+	//GameMessage    string    `json:"gameMessage"`
+	//Time           *string   `json:"time"`           // nullable, is a ISO-8601 duration format: https://en.wikipedia.org/wiki/ISO_8601#Durations
+	//PersonalBest   *string   `json:"personalBest"`   // nullable, TODO: investigate correct type
+	//Party          *[]string `json:"party"`          // nullable
 }
