@@ -6,16 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mime/multipart"
 	"net/http"
 	"strings"
 )
-
-type dinkRequest struct {
-	image       *multipart.File
-	imageHeader *multipart.FileHeader
-	payload     *dinkRequestPayload
-}
 
 // dinkRequestPayload represents JSON data about the received request
 // Only some fields that are relevant are included in the object
@@ -42,8 +35,8 @@ func (p *dinkRequestPayload) String() string {
 	)
 }
 
-func parseDinkRequest(r *http.Request) (*dinkRequest, error) {
-	dr := new(dinkRequest)
+func parseDinkRequest(r *http.Request) (*dinkRequestPayload, error) {
+	payload := new(dinkRequestPayload)
 
 	// Read body data to parse it and then restore it for later
 	bodyBytes, err := io.ReadAll(r.Body)
@@ -54,23 +47,17 @@ func parseDinkRequest(r *http.Request) (*dinkRequest, error) {
 
 	contentType := r.Header.Get("Content-Type")
 	if strings.HasPrefix(contentType, "application/json") {
-		// An incoming upload without an image with body being directly the incoming request's data
-		if err = json.Unmarshal(bodyBytes, &dr.payload); err != nil {
+		// An incoming request without an image, its body is directly the incoming request's data
+		if err = json.Unmarshal(bodyBytes, payload); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal payload json from body: %w", err)
 		}
 	} else if strings.HasPrefix(contentType, "multipart/form-data") {
 		// An incoming request with an image, parse its form data
 		// Recreate data with a temporary request with data read earlier
 		parseReq, _ := http.NewRequest(r.Method, r.URL.String(), bytes.NewBuffer(bodyBytes))
-		parseReq.Header = r.Header
-		imageFile, imageFileHeader, err := parseReq.FormFile("file")
-		if err != nil {
-			return nil, fmt.Errorf("failed to get form file: %w", err)
-		}
-		dr.image = &imageFile
-		dr.imageHeader = imageFileHeader
+		parseReq.Header = r.Header // Necessary to keep in check for PostFormValue call (which calls ParseMultipartForm) below
 
-		if err = json.Unmarshal([]byte(parseReq.PostFormValue("payload_json")), &dr.payload); err != nil {
+		if err = json.Unmarshal([]byte(parseReq.PostFormValue("payload_json")), payload); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal payload json from form: %w", err)
 		}
 	} else {
@@ -79,7 +66,7 @@ func parseDinkRequest(r *http.Request) (*dinkRequest, error) {
 
 	// Restore body data to the original request
 	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-	return dr, nil
+	return payload, nil
 }
 
 // Models for currently handled notification types

@@ -19,18 +19,18 @@ func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 	// 3. If successful, make requests to all defined hosts that succeeded
 	log.Println("[API:filter] Received a filter request")
 
-	dinkReq, err := parseDinkRequest(r)
+	dinkPayload, err := parseDinkRequest(r)
 	if err != nil {
 		log.Println("[API:filter] Failed to parse incoming request:", err)
 		http.Error(w, "failed to parse incoming request", http.StatusInternalServerError)
 		return
 	}
-	log.Printf("[API:filter] Parsed request data %v\n", dinkReq.payload)
+	log.Printf("[API:filter] Parsed request data %v\n", dinkPayload)
 
-	switch dinkReq.payload.Type {
+	switch dinkPayload.Type {
 	case "KILL_COUNT":
 		extra := new(dinkPayloadKillCount)
-		if err = json.Unmarshal(dinkReq.payload.Extra, extra); err != nil {
+		if err = json.Unmarshal(dinkPayload.Extra, extra); err != nil {
 			log.Println("[API:filter:KILL_COUNT] Failed to parse extra field")
 			http.Error(w, "failed to parse extra field in incoming request", http.StatusBadRequest)
 			return
@@ -61,12 +61,12 @@ func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 			// Always notify on the first kill or on a PB
 			if extra.Count == 1 || (extra.IsPersonalBest != nil && *extra.IsPersonalBest) || extra.Count%kcInterval == 0 {
 				// Send the requests that satisfy filter criteria
-				go forwardRequestToDestination(r, destURL, dinkReq)
+				go forwardRequestToDestination(r, destURL, dinkPayload)
 			}
 		}
 	case "LOOT":
 		extra := new(dinkPayloadLoot)
-		if err = json.Unmarshal(dinkReq.payload.Extra, extra); err != nil {
+		if err = json.Unmarshal(dinkPayload.Extra, extra); err != nil {
 			log.Println("[API:filter:LOOT] Failed to parse extra field")
 			http.Error(w, "failed to parse extra field in incoming request", http.StatusBadRequest)
 			return
@@ -89,11 +89,11 @@ func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 			log.Printf("[API:filter:LOOT] host %q wants threshold %d\n", destURL, valueTreshold)
 			if totalValue >= valueTreshold {
 				// Send the requests that satisfy filter criteria
-				go forwardRequestToDestination(r, destURL, dinkReq)
+				go forwardRequestToDestination(r, destURL, dinkPayload)
 			}
 		}
 	default:
-		log.Printf("[API:filter] Received unhandled dink type %q\n", dinkReq.payload.Type)
+		log.Printf("[API:filter] Received unhandled dink request type %q\n", dinkPayload.Type)
 	}
 
 	w.WriteHeader(http.StatusOK)
