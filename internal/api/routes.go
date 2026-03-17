@@ -40,7 +40,7 @@ func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 		log.Printf("[API:filter:KILL_COUNT] boss %q kc %d\n", extra.Boss, extra.Count)
 		for destURL, destFilter := range cfg.Destinations {
 			// First check if we should care about this destination to begin with
-			if !destFilter.EnableKillCount {
+			if destFilter == nil || !destFilter.EnableKillCount {
 				continue
 			}
 
@@ -81,7 +81,7 @@ func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 
 		for destURL, destFilter := range cfg.Destinations {
 			// First check if we should care about this destination to begin with
-			if !destFilter.EnableLoot {
+			if destFilter == nil || !destFilter.EnableLoot {
 				continue
 			}
 
