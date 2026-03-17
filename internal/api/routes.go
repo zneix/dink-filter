@@ -21,7 +21,7 @@ func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	// 1. Parse incomding request's body
+	// 1. Parse incoming request's body
 	// 2. Figure out whether or not the request should be forwarded to other hosts (e.g. check kc/loot threshold against defined values)
 	// 3. If successful, make requests to all defined hosts that succeeded
 	dinkPayload, err := parseDinkRequest(r)
