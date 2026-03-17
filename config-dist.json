@@ -1,6 +1,7 @@
 {
 	"routePrefix": "/dink-filter",
 	"bindAddress": "localhost:9405",
+	"password": "nexling",
 	"globalFilter": {
 		"lootThreshold": 100000,
 		"defaultKillCountInterval": 25,
@@ -15,7 +16,8 @@
 			"enableKillCountRegular": true,
 			"enableKillCountPBs": true,
 			"lootThreshold": 500000,
-			"defaultKillCountInterval": 100
+			"defaultKillCountInterval": 100,
+			"killCountIntervals": {}
 		}
 	}
 }

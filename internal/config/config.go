@@ -10,6 +10,7 @@ import (
 type Config struct {
 	RoutePrefix  string                        `json:"routePrefix"`
 	BindAddress  string                        `json:"bindAddress"`
+	Password     string                        `json:"password"`
 	GlobalFilter DestinationFilter             `json:"globalFilter"`
 	Destinations map[string]*DestinationFilter `json:"destinations"`
 }

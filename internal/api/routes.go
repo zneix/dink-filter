@@ -1,6 +1,7 @@
 package api
 
 import (
+	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -14,6 +15,12 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
+	// 0. Check if incoming request is authorized to forward requests
+	if subtle.ConstantTimeCompare([]byte(r.URL.Query().Get("password")), []byte(cfg.Password)) == 0 {
+		log.Println("[API:filter] Unauthorized request from", r.UserAgent())
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 	// 1. Parse incomding request's body
 	// 2. Figure out whether or not the request should be forwarded to other hosts (e.g. check kc/loot threshold against defined values)
 	// 3. If successful, make requests to all defined hosts that succeeded
