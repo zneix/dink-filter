@@ -29,12 +29,6 @@ type dinkRequestPayload struct {
 	//DiscordUser       *json.RawMessage  `json:"discordUser,omitempty"`
 }
 
-func (p *dinkRequestPayload) String() string {
-	return fmt.Sprintf("&api.dinkRequestPayload{Extra:%v, Type:%v}",
-		string(p.Extra), p.Type,
-	)
-}
-
 func parseDinkRequest(r *http.Request) (*dinkRequestPayload, error) {
 	payload := new(dinkRequestPayload)
 

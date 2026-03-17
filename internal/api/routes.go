@@ -24,15 +24,13 @@ func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 	// 1. Parse incomding request's body
 	// 2. Figure out whether or not the request should be forwarded to other hosts (e.g. check kc/loot threshold against defined values)
 	// 3. If successful, make requests to all defined hosts that succeeded
-	log.Println("[API:filter] Received a filter request")
-
 	dinkPayload, err := parseDinkRequest(r)
 	if err != nil {
 		log.Println("[API:filter] Failed to parse incoming request:", err)
 		http.Error(w, "failed to parse incoming request", http.StatusInternalServerError)
 		return
 	}
-	log.Printf("[API:filter] Parsed request data %v\n", dinkPayload)
+	log.Printf("[API:filter] Parsed request type %q data %s\n", dinkPayload.Type, string(dinkPayload.Extra))
 
 	switch dinkPayload.Type {
 	case "KILL_COUNT":
@@ -64,10 +62,10 @@ func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 			}
 
 			kcInterval := cfg.GetKillCountInterval(destURL, extra.Boss)
-			log.Printf("[API:filter:KILL_COUNT] host %q wants interval %d\n", destURL, kcInterval)
 			// Always notify on the first kill or on a PB
 			if extra.Count == 1 || (extra.IsPersonalBest != nil && *extra.IsPersonalBest) || extra.Count%kcInterval == 0 {
 				// Send the requests that satisfy filter criteria
+				log.Printf("[API:filter:KILL_COUNT] satisfied host %q with interval %d\n", destURL, kcInterval)
 				go forwardRequestToDestination(r, destURL, dinkPayload)
 			}
 		}
@@ -93,9 +91,9 @@ func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 			}
 
 			valueTreshold := cfg.GetLootTreshold(destURL)
-			log.Printf("[API:filter:LOOT] host %q wants threshold %d\n", destURL, valueTreshold)
 			if totalValue >= valueTreshold {
 				// Send the requests that satisfy filter criteria
+				log.Printf("[API:filter:LOOT] satisfied host %q with threshold %d\n", destURL, valueTreshold)
 				go forwardRequestToDestination(r, destURL, dinkPayload)
 			}
 		}
