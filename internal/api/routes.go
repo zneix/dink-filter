@@ -24,7 +24,7 @@ func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 	// 1. Parse incoming request's body
 	// 2. Figure out whether or not the request should be forwarded to other hosts (e.g. check kc/loot threshold against defined values)
 	// 3. If successful, make requests to all defined hosts that succeeded
-	dinkPayload, err := parseDinkRequest(r)
+	dinkPayload, bodyBytes, err := parseDinkRequest(r)
 	if err != nil {
 		log.Println("[API:filter] Failed to parse incoming request:", err)
 		http.Error(w, "failed to parse incoming request", http.StatusInternalServerError)
@@ -66,7 +66,7 @@ func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 			if extra.Count == 1 || (extra.IsPersonalBest != nil && *extra.IsPersonalBest) || extra.Count%kcInterval == 0 {
 				// Send the requests that satisfy filter criteria
 				log.Printf("[API:filter:KILL_COUNT] satisfied host %q with interval %d\n", destURL, kcInterval)
-				go forwardRequestToDestination(r, destURL, dinkPayload)
+				go forwardRequestToDestination(r, bodyBytes, destURL, dinkPayload)
 			}
 		}
 	case "LOOT":
@@ -94,7 +94,7 @@ func handleFilter(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 			if totalValue >= valueTreshold {
 				// Send the requests that satisfy filter criteria
 				log.Printf("[API:filter:LOOT] satisfied host %q with threshold %d\n", destURL, valueTreshold)
-				go forwardRequestToDestination(r, destURL, dinkPayload)
+				go forwardRequestToDestination(r, bodyBytes, destURL, dinkPayload)
 			}
 		}
 	default:

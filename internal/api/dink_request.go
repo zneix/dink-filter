@@ -29,13 +29,13 @@ type dinkRequestPayload struct {
 	//DiscordUser       *json.RawMessage  `json:"discordUser,omitempty"`
 }
 
-func parseDinkRequest(r *http.Request) (*dinkRequestPayload, error) {
+func parseDinkRequest(r *http.Request) (*dinkRequestPayload, []byte, error) {
 	payload := new(dinkRequestPayload)
 
 	// Read body data to parse it and then restore it for later
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read request body: %w", err)
+		return nil, nil, fmt.Errorf("failed to read request body: %w", err)
 	}
 	r.Body.Close()
 
@@ -43,7 +43,7 @@ func parseDinkRequest(r *http.Request) (*dinkRequestPayload, error) {
 	if strings.HasPrefix(contentType, "application/json") {
 		// An incoming request without an image, its body is directly the incoming request's data
 		if err = json.Unmarshal(bodyBytes, payload); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal payload json from body: %w", err)
+			return nil, nil, fmt.Errorf("failed to unmarshal payload json from body: %w", err)
 		}
 	} else if strings.HasPrefix(contentType, "multipart/form-data") {
 		// An incoming request with an image, parse its form data
@@ -52,15 +52,15 @@ func parseDinkRequest(r *http.Request) (*dinkRequestPayload, error) {
 		parseReq.Header = r.Header // Necessary to keep in check for PostFormValue call (which calls ParseMultipartForm) below
 
 		if err = json.Unmarshal([]byte(parseReq.PostFormValue("payload_json")), payload); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal payload json from form: %w", err)
+			return nil, nil, fmt.Errorf("failed to unmarshal payload json from form: %w", err)
 		}
 	} else {
-		return nil, errors.New("unexpected Content-Type: " + contentType)
+		return nil, nil, errors.New("unexpected Content-Type: " + contentType)
 	}
 
 	// Restore body data to the original request
 	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-	return payload, nil
+	return payload, bodyBytes, nil
 }
 
 // Models for currently handled notification types
